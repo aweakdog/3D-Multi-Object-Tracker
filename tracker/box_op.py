@@ -3,7 +3,7 @@ import numpy as np
 
 def convert_bbs_type(boxes, input_box_type):
     boxes = np.array(boxes)
-
+    return boxes
     assert input_box_type in ["Kitti", "OpenPCDet", "Waymo", "SemanticKitti"], 'unsupported input box type!'
 
     if input_box_type in ["OpenPCDet", "Waymo", "SemanticKitti"]:
