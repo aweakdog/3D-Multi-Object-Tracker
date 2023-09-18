@@ -179,3 +179,25 @@ if __name__ == '__main__':
 
     udi_tracker = UdiTracker()
     udi_tracker.listener()
+
+
+# todo 2023.09.18
+'''
+一、主要流程
+1.把定节的话题接进来，然后把输出的障碍物装换到世界坐标系
+2.把障碍物转换成udi_msgs的prediction_objects类型输出
+
+二、和感知联调试
+1.和感知对 det_scores 这个置信度，目前全都给的100 (吴晓民)
+2.和感知对部署到统一台电脑上测试
+3.看可视化是否结果正确，感知是否结果跳变很多
+
+三、调参
+1.调一些参数使得效果更好
+2.如果有数据集 在数据集上eval这个算法
+
+四、杂项
+1.改cmakelist 使得能catkin_make install 和 roslaunch
+目前只能 python3 ./src/3D-Multi-Object-Tracker/udi_castrack.py 启动
+2.把python3程序打成deb包部署上车的方法 
+'''
