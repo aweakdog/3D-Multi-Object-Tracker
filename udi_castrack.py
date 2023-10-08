@@ -185,7 +185,7 @@ if __name__ == '__main__':
 '''
 一、主要流程
 1.把定节的话题接进来，然后把输出的障碍物装换到世界坐标系
-2.把障碍物转换成udi_msgs的prediction_objects类型输出
+2.把障碍物转换成udi_msgs的PredictionObstacles类型输出
 
 二、和感知联调试
 1.和感知对 det_scores 这个置信度，目前全都给的100 (吴晓民)
