@@ -1,7 +1,9 @@
 import rospy
 from udi_msgs.msg import PerceptionObjects
-#from private_msgs.msg import GnssCoords
+from private_msgs.msg import GnssCoords
 from tracker.tracker import Tracker3D
+from udi_msgs.msg import PredictionObstacles
+from udi_msgs.msg import PredictionObstacle
 import numpy as np
 
 from visualization_msgs.msg import Marker, MarkerArray
@@ -50,8 +52,32 @@ class UdiTracker():
         self.have_new_pose = True
         #self.pose = np.array([0,0,0,0,0,0,1])
         self.pose = None
+        self.pose2 = None
         self.bbs = []
         self.ids = []
+
+    def convert_perception_objects_to_prediction_obstacles(self, data):
+        vehicle_position = self.pose2.pose.position
+        vehicle_orientation = self.pose2.pose.orientation
+        # Convert each PerceptionObject in the PerceptionObjects message to a PredictionObstacle
+        for perception_object in data.perception_object:
+            # 获取障碍物相对于车辆的位置和朝向
+            obstacle_position = perception_object.position
+            obstacle_orientation = perception_object.theta
+
+            # 进行坐标转换
+            # 首先，将障碍物的位置从车辆坐标系转换为世界坐标系
+            world_x = vehicle_position.x + obstacle_position.x * math.cos(vehicle_orientation.z) - obstacle_position.y * math.sin(vehicle_orientation.z)
+            world_y = vehicle_position.y + obstacle_position.x * math.sin(vehicle_orientation.z) + obstacle_position.y * math.cos(vehicle_orientation.z)
+            world_z = vehicle_position.z + obstacle_position.z
+
+            # 其次，将障碍物的朝向从车辆坐标系转换为世界坐标系
+            world_theta = vehicle_orientation.z + obstacle_orientation
+
+            perception_object.theta = world_theta
+            perception_object.position.x = world_x
+            perception_object.position.y = world_y
+            perception_object.position.z = world_z
 
     def convert_objects_to_kitti(self, data):
         tmp_objects = []
@@ -75,14 +101,20 @@ class UdiTracker():
 
     
     def objects_callback(self, data):
+        if not self.have_new_pose:
+            print("!")
+            return
+        print("@")
         self.objects, self.det_scores = self.convert_objects_to_kitti(data)
         self.have_new_object = True
-        
+        self.convert_perception_objects_to_prediction_obstacles(data)
+        self.perdiction_pub.publish(data)
+        #print(data)
 
     def localization_callback(self,data):
-        return
-        self.pose = self.convert_pose_to_kitti(data)
+        self.pose2 = data
         self.have_new_pose = True
+        return
 
     def run_track(self):
         if self.have_new_object and self.have_new_pose:
@@ -94,7 +126,7 @@ class UdiTracker():
                             timestamp=self.frame_num)
             self.have_new_object = False
             self.have_new_pose = True
-            print('bbs:',self.bbs,'ids:',self.ids)
+            #print('bbs:',self.bbs,'ids:',self.ids)
     
     def vis(self):
         
@@ -167,8 +199,10 @@ class UdiTracker():
     def listener(self):
         rospy.init_node('udi_castrack', anonymous=True)
         rospy.Subscriber('/perception/detOBB', PerceptionObjects, self.objects_callback)
-        #rospy.Subscriber('/gnss_coords', GnssCoords, localization_callback)
+        rospy.Subscriber('/gnss_coords', GnssCoords, self.localization_callback)
         self.marker_pub = rospy.Publisher('/bounding_boxes', MarkerArray, queue_size=1)
+        self.perdiction_pub = rospy.Publisher('/perception_objects_world', PerceptionObjects, queue_size=1)
+
         rate = rospy.Rate(10) # 设置循环速率为10Hz
         while not rospy.is_shutdown():
             self.run_track()
