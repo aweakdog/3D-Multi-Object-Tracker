@@ -86,12 +86,16 @@ class UdiTracker():
     
     def convert_result_to_global_prediction_obstacles_and_pub(self):
         data = self.objects_data
+        ids = self.ids
+        print('ids:',ids,'object_size:',len(self.objects_data.perception_object))
         vehicle_position = self.pose2.pose.position
         vehicle_orientation = self.pose2.pose.orientation
         # Convert each PerceptionObject in the PerceptionObjects message to a PredictionObstacle
         prediction_obstacles = PredictionObstacles()
         prediction_obstacles.header = data.header
+        now_object = -1
         for perception_object in data.perception_object:
+            now_object += 1
             # 获取障碍物相对于车辆的位置和朝向
             obstacle_position = perception_object.position
             obstacle_orientation = perception_object.theta
@@ -115,6 +119,7 @@ class UdiTracker():
             new_perception_object.position.x = world_x
             new_perception_object.position.y = world_y
             new_perception_object.position.z = world_z
+            new_perception_object.id = ids[now_object]
             tmp_prediction_obstacle.perception_object = new_perception_object
             tmp_prediction_obstacle.timestamp = data.header.timestamp_sec
             prediction_obstacles.prediction_obstacle.append(tmp_prediction_obstacle)
