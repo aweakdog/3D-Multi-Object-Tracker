@@ -98,12 +98,16 @@ class UdiTracker():
 
             # 进行坐标转换
             # 首先，将障碍物的位置从车辆坐标系转换为世界坐标系
-            world_x = vehicle_position.x + obstacle_position.x * math.cos(vehicle_orientation.z) - obstacle_position.y * math.sin(vehicle_orientation.z)
-            world_y = vehicle_position.y + obstacle_position.x * math.sin(vehicle_orientation.z) + obstacle_position.y * math.cos(vehicle_orientation.z)
+            world_x = vehicle_position.x + obstacle_position.x * \
+                math.cos(vehicle_orientation.qz) - \
+                obstacle_position.y * math.sin(vehicle_orientation.qz)
+            world_y = vehicle_position.y + obstacle_position.x * \
+                math.sin(vehicle_orientation.qz) + \
+                obstacle_position.y * math.cos(vehicle_orientation.qz)
             world_z = vehicle_position.z + obstacle_position.z
 
             # 其次，将障碍物的朝向从车辆坐标系转换为世界坐标系
-            world_theta = vehicle_orientation.z + obstacle_orientation
+            world_theta = vehicle_orientation.qz + obstacle_orientation
 
             tmp_prediction_obstacle = PredictionObstacle()
             new_perception_object = copy.deepcopy(perception_object)
