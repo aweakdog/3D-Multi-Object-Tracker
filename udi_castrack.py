@@ -84,8 +84,8 @@ class UdiTracker():
             perception_object.position.y = world_y
             perception_object.position.z = world_z
     
-    def convert_result_to_global_prediction_obstacles_and_pub(self,object_data):
-        data = object_data
+    def convert_result_to_global_prediction_obstacles_and_pub(self):
+        data = self.objects_data
         ids = self.ids
         print('ids:',ids,'object_size:',len(self.objects_data.perception_object))
         vehicle_position = self.pose2.pose.position
