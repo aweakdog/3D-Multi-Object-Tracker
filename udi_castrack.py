@@ -84,8 +84,8 @@ class UdiTracker():
             perception_object.position.y = world_y
             perception_object.position.z = world_z
     
-    def convert_result_to_global_prediction_obstacles_and_pub(self):
-        data = self.objects_data
+    def convert_result_to_global_prediction_obstacles_and_pub(self,object_data):
+        data = object_data
         ids = self.ids
         print('ids:',ids,'object_size:',len(self.objects_data.perception_object))
         vehicle_position = self.pose2.pose.position
@@ -155,6 +155,7 @@ class UdiTracker():
         self.objects_data = data
         self.objects, self.det_scores = self.convert_objects_to_kitti(data)
         self.have_new_object = True
+        self.run_track()
         #self.convert_perception_objects_to_prediction_obstacles(data)
         #self.prediction_pub.publish(data)
         #print(data)
@@ -266,7 +267,7 @@ class UdiTracker():
 
         rate = rospy.Rate(10) # 设置循环速率为10Hz
         while not rospy.is_shutdown():
-            self.run_track()
+            #self.run_track()
             self.vis()
             rate.sleep() # 按照所设置的频率暂停循环
 
