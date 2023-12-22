@@ -128,7 +128,7 @@ class UdiTracker():
                 point_world_x = vehicle_position.x + polygon_point.x * \
                     math.cos(vehicle_heading) - \
                     obstacle_position.y * math.sin(vehicle_heading)
-                point_world_y = vehicle_position.y + polygon_point.x * \
+                point_world_y = vehicle_position.y + polygon_point.y * \
                     math.sin(vehicle_heading) + \
                     obstacle_position.y * math.cos(vehicle_heading)
                 point_world_z = vehicle_position.z + polygon_point.z
