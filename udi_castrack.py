@@ -127,10 +127,10 @@ class UdiTracker():
             for polygon_point in new_perception_object.polygon_point:
                 point_world_x = vehicle_position.x + polygon_point.x * \
                     math.cos(vehicle_heading) - \
-                    obstacle_position.y * math.sin(vehicle_heading)
-                point_world_y = vehicle_position.y + polygon_point.y * \
+                    polygon_point.y * math.sin(vehicle_heading)
+                point_world_y = vehicle_position.y + polygon_point.x * \
                     math.sin(vehicle_heading) + \
-                    obstacle_position.y * math.cos(vehicle_heading)
+                    polygon_point.y * math.cos(vehicle_heading)
                 point_world_z = vehicle_position.z + polygon_point.z
 
                 polygon_point.x = point_world_x
