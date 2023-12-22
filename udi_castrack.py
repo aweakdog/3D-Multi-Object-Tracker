@@ -112,7 +112,7 @@ class UdiTracker():
             world_z = vehicle_position.z + obstacle_position.z
 
             # 其次，将障碍物的朝向从车辆坐标系转换为世界坐标系
-            world_theta = vehicle_orientation.qz + obstacle_orientation
+            world_theta = vehicle_heading + obstacle_orientation
 
             tmp_prediction_obstacle = PredictionObstacle()
             new_perception_object = copy.deepcopy(perception_object)
@@ -121,6 +121,19 @@ class UdiTracker():
             new_perception_object.position.y = world_y
             new_perception_object.position.z = world_z
             new_perception_object.id = ids[now_object]
+            for polygon_point in new_perception_object.polygon_point:
+                point_world_x = vehicle_position.x + polygon_point.x * \
+                    math.cos(vehicle_heading) - \
+                    obstacle_position.y * math.sin(vehicle_heading)
+                point_world_y = vehicle_position.y + polygon_point.x * \
+                    math.sin(vehicle_heading) + \
+                    obstacle_position.y * math.cos(vehicle_heading)
+                point_world_z = vehicle_position.z + polygon_point.z
+
+                polygon_point.x = point_world_x
+                polygon_point.y = point_world_y
+                polygon_point.z = point_world_z
+
             tmp_prediction_obstacle.perception_object = new_perception_object
             tmp_prediction_obstacle.timestamp = data.header.timestamp_sec
             prediction_obstacles.prediction_obstacle.append(tmp_prediction_obstacle)
