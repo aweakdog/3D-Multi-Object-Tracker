@@ -90,6 +90,7 @@ class UdiTracker():
         print('ids:',ids,'object_size:',len(self.objects_data.perception_object))
         vehicle_position = self.pose2.pose.position
         vehicle_orientation = self.pose2.pose.orientation
+        vehicle_heading = self.pose2.pose.heading
         # Convert each PerceptionObject in the PerceptionObjects message to a PredictionObstacle
         prediction_obstacles = PredictionObstacles()
         prediction_obstacles.header = data.header
@@ -103,11 +104,11 @@ class UdiTracker():
             # 进行坐标转换
             # 首先，将障碍物的位置从车辆坐标系转换为世界坐标系
             world_x = vehicle_position.x + obstacle_position.x * \
-                math.cos(vehicle_orientation.qz) - \
-                obstacle_position.y * math.sin(vehicle_orientation.qz)
+                math.cos(vehicle_heading) - \
+                obstacle_position.y * math.sin(vehicle_heading)
             world_y = vehicle_position.y + obstacle_position.x * \
-                math.sin(vehicle_orientation.qz) + \
-                obstacle_position.y * math.cos(vehicle_orientation.qz)
+                math.sin(vehicle_heading) + \
+                obstacle_position.y * math.cos(vehicle_heading)
             world_z = vehicle_position.z + obstacle_position.z
 
             # 其次，将障碍物的朝向从车辆坐标系转换为世界坐标系
