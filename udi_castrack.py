@@ -91,6 +91,9 @@ class UdiTracker():
         vehicle_position = self.pose2.pose.position
         vehicle_orientation = self.pose2.pose.orientation
         vehicle_heading = self.pose2.pose.heading
+        qx,qy,qz,qw = vehicle_orientation.qx,vehicle_orientation.qy,vehicle_orientation.qz,vehicle_orientation.qw
+        vehicle_heading = math.atan2(2*qx*qy+2*qw*qz,qw*qw+qx*qx-qy*qy-qz*qz)
+
         # Convert each PerceptionObject in the PerceptionObjects message to a PredictionObstacle
         prediction_obstacles = PredictionObstacles()
         prediction_obstacles.header = data.header
