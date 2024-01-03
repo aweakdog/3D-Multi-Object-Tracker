@@ -96,7 +96,9 @@ class UdiTracker():
 
         # Convert each PerceptionObject in the PerceptionObjects message to a PredictionObstacle
         prediction_obstacles = PredictionObstacles()
+        print('99:',data.header)
         prediction_obstacles.header = data.header
+        print('101:',prediction_obstacles.header)
         now_object = -1
         for perception_object in data.perception_object:
             now_object += 1
@@ -138,7 +140,8 @@ class UdiTracker():
                 polygon_point.z = point_world_z
 
             tmp_prediction_obstacle.perception_object = new_perception_object
-            tmp_prediction_obstacle.timestamp = data.header.timestamp_sec
+            tmp_prediction_obstacle.timestamp = perception_object.timestamp
+            prediction_obstacles.header.timestamp_sec = perception_object.timestamp # todo fix, remove this after xiaoming add timestamp to PerceptionObjects
             prediction_obstacles.prediction_obstacle.append(tmp_prediction_obstacle)
         print('117 pub prediction_obstacles!!')
         self.prediction_obstacles_pub.publish(prediction_obstacles)
