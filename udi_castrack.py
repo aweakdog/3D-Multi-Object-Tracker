@@ -174,7 +174,10 @@ class UdiTracker():
         print("@")
         self.objects_data = data
         self.objects, self.det_scores = self.convert_objects_to_kitti(data)
-        self.have_new_object = True
+        if (len(self.objects) == 0):
+            self.have_new_object = False
+        else:
+            self.have_new_object = True
         self.run_track()
         #self.convert_perception_objects_to_prediction_obstacles(data)
         #self.prediction_pub.publish(data)
