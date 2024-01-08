@@ -60,6 +60,7 @@ class UdiTracker():
         self.pose_localization_estimate = None
         self.bbs = []
         self.ids = []
+        self.velocities = []
 
     def convert_perception_objects_to_prediction_obstacles(self, data):
         vehicle_position = self.pose2.pose.position
@@ -87,6 +88,7 @@ class UdiTracker():
     def convert_result_to_global_prediction_obstacles_and_pub(self):
         data = self.objects_data
         ids = self.ids
+        velocities = self.velocities
         print('ids:',ids,'object_size:',len(self.objects_data.perception_object))
         vehicle_position = self.pose2.pose.position
         vehicle_orientation = self.pose2.pose.orientation
@@ -125,6 +127,12 @@ class UdiTracker():
             new_perception_object.position.x = world_x
             new_perception_object.position.y = world_y
             new_perception_object.position.z = world_z
+
+            print('131:',velocities[now_object])
+            new_perception_object.velocity.x = velocities[now_object][0]
+            new_perception_object.velocity.y = velocities[now_object][1]
+            new_perception_object.velocity.z = velocities[now_object][2]
+
             new_perception_object.id = ids[now_object]
             for polygon_point in new_perception_object.polygon_point:
                 point_world_x = vehicle_position.x + polygon_point.x * \
@@ -149,16 +157,39 @@ class UdiTracker():
     def convert_objects_to_kitti(self, data):
         tmp_objects = []
         det_scores = []
+
+        vehicle_position = self.pose2.pose.position
+        vehicle_orientation = self.pose2.pose.orientation
+        vehicle_heading = self.pose2.pose.heading
+        qx,qy,qz,qw = vehicle_orientation.qx,vehicle_orientation.qy,vehicle_orientation.qz,vehicle_orientation.qw
+        vehicle_heading = math.atan2(2*qx*qy+2*qw*qz,qw*qw+qx*qx-qy*qy-qz*qz)
+
+
         for perception_object in data.perception_object:
+
+
             x = perception_object.position.x
             y = perception_object.position.y
             z = perception_object.position.z
             length = perception_object.length
             width = perception_object.width
             height = perception_object.height
-
+            
+            # to world to meet the demand of velocity estimator
             yaw = perception_object.theta
-            tmp_objects.append(np.array([x,y,z,length,width,height,yaw]))
+
+            world_x = vehicle_position.x + x * \
+                math.cos(vehicle_heading) - \
+                y * math.sin(vehicle_heading)
+            world_y = vehicle_position.y + x * \
+                math.sin(vehicle_heading) + \
+                y * math.cos(vehicle_heading)
+            world_z = vehicle_position.z + z
+
+            # 其次，将障碍物的朝向从车辆坐标系转换为世界坐标系
+            world_theta = vehicle_heading + yaw
+
+            tmp_objects.append(np.array([world_x,world_y,world_z,length,width,height,world_theta]))
             det_scores.append(100)
         return np.array(tmp_objects),np.array(det_scores)
 
@@ -173,8 +204,10 @@ class UdiTracker():
         #    return
         print("@")
         self.objects_data = data
-        self.objects, self.det_scores = self.convert_objects_to_kitti(data)
-        self.have_new_object = True
+
+        if self.have_new_pose:
+            self.objects, self.det_scores = self.convert_objects_to_kitti(data)
+            self.have_new_object = True
         self.run_track()
         #self.convert_perception_objects_to_prediction_obstacles(data)
         #self.prediction_pub.publish(data)
@@ -196,7 +229,7 @@ class UdiTracker():
         print('165:self.have_new_object:',self.have_new_object)
         if self.have_new_object and self.have_new_pose:
             self.frame_num += 1
-            self.bbs,self.ids = self.tracker.tracking(self.objects[:, :7],
+            self.bbs,self.ids,self.velocities = self.tracker.tracking(self.objects[:, :7],
                             features=None,
                             scores=self.det_scores,
                             pose=self.pose,

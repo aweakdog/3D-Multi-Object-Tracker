@@ -66,9 +66,9 @@ class Tracker3D:
                 self.current_bbs = convert_bbs_type(self.current_bbs,self.box_type)
                 self.current_bbs = register_bbs(self.current_bbs,self.current_pose)
                 ids = self.association()
-                bbs,ids = self.trajectories_update_init(ids)
+                bbs,ids,velocities = self.trajectories_update_init(ids)
 
-                return np.array(bbs),np.array(ids)
+                return np.array(bbs),np.array(ids),np.array(velocities)
 
 
 
@@ -185,6 +185,34 @@ class Tracker3D:
                     self.label_seed+=1
             return ids
 
+    def velocity_estimator(self,track):
+        print('189:',len(track))
+        now = 0
+        pre_x,pre_y,pre_z = 0,0,0
+        first = True
+        av_x, av_y, av_z = 0, 0, 0
+        time_gap = 0.1 # to_config
+        for current_status in track.trajectory.values():
+            now += 1
+            x = current_status.predicted_state[0]
+            y = current_status.predicted_state[1]
+            z = current_status.predicted_state[2]
+            if(first):
+                pre_x = x
+                pre_y = y
+                pre_z = z
+                first = False
+                continue
+            av_x += (x - pre_x)/time_gap
+            av_y += (y - pre_y)/time_gap
+            av_z += (z - pre_z)/time_gap
+        if now > 1:
+            av_x /= now - 1
+            av_y /= now - 1
+            av_z /= now - 1
+            return [av_x,av_y,av_z]
+        else:
+            return [0,0,0]
 
     def trajectories_update_init(self,ids):
         """
@@ -196,6 +224,7 @@ class Tracker3D:
 
         valid_bbs = []
         valid_ids = []
+        valid_velocities = []
 
         for i in range(len(self.current_bbs)):
             label = ids[i]
@@ -214,6 +243,13 @@ class Tracker3D:
                      timestamp=self.current_timestamp)
                 valid_bbs.append(box)
                 valid_ids.append(label)
+
+                velocity = self.velocity_estimator(track)
+                valid_velocities.append(velocity)
+                #print('len:',len(track.trajectory))
+                #for a in track.trajectory.values():
+                #    print('218:',a)
+                #    print(a.predicted_state)
             elif score>self.config.init_score:
                 new_tra = Trajectory(init_bb=box,
                                      init_features=features,
@@ -226,13 +262,17 @@ class Tracker3D:
                 self.active_trajectories[label] = new_tra
                 valid_bbs.append(box)
                 valid_ids.append(label)
+
+                velocity = self.velocity_estimator(self.active_trajectories[label])
+                valid_velocities.append(velocity)
             else:
                 continue
-        if len(valid_bbs)==0:
-            return np.zeros(shape=(0,7)),np.zeros(shape=(0))
+        if len(valid_bbs) == 0:
+            return np.zeros(shape=(0, 7)), np.zeros(shape=(0)), np.zeros(shape=(0, 3))
         else:
-            return np.array(valid_bbs),np.array(valid_ids)
-
+            print('248:',len(np.array(valid_velocities)))
+            print('248:',np.array(valid_velocities))
+            return np.array(valid_bbs), np.array(valid_ids), np.array(valid_velocities)
 
     def post_processing(self, config):
         """
