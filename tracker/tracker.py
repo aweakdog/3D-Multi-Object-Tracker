@@ -191,25 +191,25 @@ class Tracker3D:
         pre_x,pre_y,pre_z = 0,0,0
         first = True
         av_x, av_y, av_z = 0, 0, 0
-        time_gap = 0.1 # to_config
-        for current_status in track.trajectory.values():
+        time_gap = 0.05 # to_config
+        '''for current_status in track.trajectory.values():
             now += 1
-            x = current_status.predicted_state[0]
-            y = current_status.predicted_state[1]
-            z = current_status.predicted_state[2]
-            if(first):
-                pre_x = x
-                pre_y = y
-                pre_z = z
-                first = False
-                continue
-            av_x += (x - pre_x)/time_gap
-            av_y += (y - pre_y)/time_gap
-            av_z += (z - pre_z)/time_gap
-        if now > 1:
-            av_x /= now - 1
-            av_y /= now - 1
-            av_z /= now - 1
+            x = current_status.predicted_state[3]
+            y = current_status.predicted_state[4]
+            z = current_status.predicted_state[5]
+            av_x += x
+            av_y += y
+            av_z += z'''
+        current_status = track.trajectory[max(track.trajectory,key = int)]
+        av_x = current_status.predicted_state[3]
+        av_y = current_status.predicted_state[4]
+        av_z = current_status.predicted_state[5]
+        return [av_x,av_y,av_z]
+
+        if now >= 1:
+            av_x /= now
+            av_y /= now
+            av_z /= now 
             return [av_x,av_y,av_z]
         else:
             return [0,0,0]

@@ -49,7 +49,8 @@ class UdiTracker():
         self.config = Config()
         self.tracker = Tracker3D(box_type="Kitti", tracking_features=False, config = self.config)
         self.frame_num = 0
-        self.objects = None
+        #self.objects = None
+        self.objects = np.array([])
         self.objects_data = None
         self.det_scores = None
         self.have_new_object = False
@@ -208,7 +209,7 @@ class UdiTracker():
         if self.have_new_pose:
             self.objects, self.det_scores = self.convert_objects_to_kitti(data)
             self.have_new_object = True
-        if (len(self.objects) == 0):
+        if ((len(self.objects) == 0)):
             self.have_new_object = False
         else:
             self.have_new_object = True
