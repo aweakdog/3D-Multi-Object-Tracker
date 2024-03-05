@@ -24,6 +24,17 @@ c.python3 ./src/3D-Multi-Object-Tracker/udi_castrack.py (默认使用8个核实�
 /prediction_obstacles #tracking结果
 /bounding_boxes #可视化结果
 
-3.
+3.可以调的参数
+
+在udi_castrack.py 的Config里
+参数含义参考原论文CasTrack 
+https://ieeexplore.ieee.org/abstract/document/9352500
+
+和原论文比本项目只修改了仓库内的udi_castrack.py里的内容，调用原论文的仓库的函数
+
+
+
+
+
 
 
